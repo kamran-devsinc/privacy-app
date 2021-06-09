@@ -12,6 +12,16 @@ const getUserProfile = async (req, res) => {
   }
 }
 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select('_id name')
+
+    return res.status(200).json({ users })
+  } catch (err) {
+    return res.status(500).json({ message: 'Internal Server Error' })
+  }
+}
+
 const sendConnectionRequest = async (req, res) => {
   try {
     const { user, params: { requestedUserId } } = req;
@@ -75,7 +85,6 @@ const getConnectionsOfStatus = async (req, res) => {
 
     return res.status(200).json({ connections: userWithFilteredConnections?.connections?.value ?? [] })
   } catch (err) {
-    console.log({ err })
     return res.status(500).json({ message: 'Internal Server Error' })
   }
 }
@@ -86,4 +95,5 @@ module.exports = {
   acceptConnectionRequest,
   declineConnection,
   getConnectionsOfStatus,
+  getAllUsers,
 }

@@ -6,10 +6,12 @@ const {
   acceptConnectionRequest,
   declineConnection,
   getConnectionsOfStatus,
+  getAllUsers,
 } = require('../controllers/users')
 
 const router = express.Router();
 
+router.get('/', getAllUsers)
 router.get('/me', getCurrentUser);
 router.get('/:id', getUserProfile);
 router.put('/send-connection-request/:requestedUserId', sendConnectionRequest)
