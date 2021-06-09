@@ -26,7 +26,6 @@ const createMessage = async (req, res) => {
 
     return res.status(200).json({ message })
   } catch (err) {
-    console.log(err)
     return res.status(500).json({ message: 'Internal Server Error' })
   }
 }
@@ -42,7 +41,6 @@ const getChat = async (req, res) => {
 
     return res.status(200).json({ chat })
   } catch (err) {
-    console.log(err)
     return res.status(500).json({ message: 'Internal Server Error' })
   }
 }

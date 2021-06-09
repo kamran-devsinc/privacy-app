@@ -22,6 +22,29 @@ const getAllUsers = async (req, res) => {
   }
 }
 
+const updateUser = async (req, res) => {
+  try {
+    const { user, body } = req;
+
+    let updatedUser = user
+    updatedUser.name = body.name || user.name
+    if (body.email && body.email.hasOwnProperty('hidden')) {
+      console.log('body has property hidden')
+      updatedUser.email.hidden = body.email.hidden
+    }
+    updatedUser.workExperience = body.workExperience || user.workExperience
+    if (body.connections && body.connections.hasOwnProperty('hidden')) {
+      updatedUser.connections.hidden = body.connections.hidden
+    }
+
+    updatedUser = await User.findOneAndUpdate({ _id: user._id }, updatedUser, { new: true })
+
+    return res.status(200).json({ user: updatedUser })
+  } catch(err) {
+    return res.status(500).json({ message: 'Internal Server Error' })
+  }
+}
+
 const sendConnectionRequest = async (req, res) => {
   try {
     const { user, params: { requestedUserId } } = req;
@@ -96,4 +119,5 @@ module.exports = {
   declineConnection,
   getConnectionsOfStatus,
   getAllUsers,
+  updateUser,
 }

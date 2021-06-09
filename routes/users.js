@@ -7,6 +7,7 @@ const {
   declineConnection,
   getConnectionsOfStatus,
   getAllUsers,
+  updateUser,
 } = require('../controllers/users')
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 router.get('/', getAllUsers)
 router.get('/me', getCurrentUser);
 router.get('/:id', getUserProfile);
+router.put('/', updateUser),
 router.put('/send-connection-request/:requestedUserId', sendConnectionRequest)
 router.put('/accept-connection-request/:requestedUserId', acceptConnectionRequest)
 router.put('/decline-connection-request/:requestedUserId', declineConnection)
