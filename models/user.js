@@ -12,7 +12,7 @@ const User = new mongoose.Schema({
   },
   password: { type: String, required: true },
   connections: {
-    value: [{ userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, status: { type: String, enum: Object.values(CONNECTION_STATUSES) } }],
+    value: [{ userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, name: {type: String, required: true } , status: { type: String, enum: Object.values(CONNECTION_STATUSES) } }],
     hidden: { type: Boolean, required: false, default: true },
   },
   workExperience: {

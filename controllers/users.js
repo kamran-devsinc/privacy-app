@@ -14,10 +14,10 @@ const getUserProfile = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ _id: { $ne: req.user._id } }).populate({
-      path:'connections.value',
-      match: { 'userId': { $in: [req.user._id] } }
-    })
+    const  { connections } = req.user
+    let userIds = connections.value.map( ({userId}) => userId ) 
+    userIds.push(req.user._id)
+    const users = await User.find({ _id: { $nin: userIds }})
 
     return res.status(200).json({ users })
   } catch (err) {
@@ -58,8 +58,8 @@ const sendConnectionRequest = async (req, res) => {
 
     if (!requestedUser) return res.status(404).json({ message: 'requested user not found' });
 
-    const user1Update = await User.findOneAndUpdate({ _id: user._id }, { $push: { 'connections.value': { userId: requestedUserId, status: User.CONNECTION_STATUSES.requestSent } } })
-    const user2Update = await User.findOneAndUpdate({ _id: requestedUserId }, { $push: { 'connections.value': { userId: user._id, status: User.CONNECTION_STATUSES.requestReceived } } })
+    const user1Update = await User.findOneAndUpdate({ _id: user._id }, { $push: { 'connections.value': { userId: requestedUserId, name: requestedUser.name,  status: User.CONNECTION_STATUSES.requestSent } } })
+    const user2Update = await User.findOneAndUpdate({ _id: requestedUserId }, { $push: { 'connections.value': { userId: user._id, name: user.name, status: User.CONNECTION_STATUSES.requestReceived } } })
 
     return res.status(200).json({ success: true, user1Update, user2Update })
   } catch (err) {
