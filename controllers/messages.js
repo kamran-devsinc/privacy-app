@@ -35,8 +35,10 @@ const getChat = async (req, res) => {
     const { user, params: { userId } } = req
 
     const chat = await Message.find({
-      $or: [{ 'sender.id': user._id, 'receiver.id': userId }],
-      $or: [{ 'sender.id': userId, 'receiver.id': user._id }],
+      $or: [
+        { 'sender.id': user._id, 'receiver.id': userId },
+        { 'sender.id': userId, 'receiver.id': user._id },
+      ],
     })
 
     return res.status(200).json({ chat })

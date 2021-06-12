@@ -2,7 +2,7 @@ const mongoose = require ('mongoose');
 
 const { hash } = require('argon2');
 
-const CONNECTION_STATUSES = { requestSent: 'REQUEST_SENT', requestReceived: 'REQUEST_RECEIVED', connected: 'CONNECTED', requestDeclined: 'REQUESTED_DECLINED' }
+const CONNECTION_STATUSES = { requestSent: 'REQUEST_SENT', requestReceived: 'REQUEST_RECEIVED', connected: 'CONNECTED' }
 
 const User = new mongoose.Schema({
   name: { type: String, required: true },
@@ -24,10 +24,6 @@ const User = new mongoose.Schema({
     transform(_docs, _ret) {
       delete _ret.password;
       delete _ret.__v;
-
-      // if (_ret.email.hidden) delete _ret.email;
-      // if (_ret.connections.hidden) delete _ret.connections;
-      // if (_ret.workExperience.hidden) delete _ret.workExperience;
     },
   },
 });

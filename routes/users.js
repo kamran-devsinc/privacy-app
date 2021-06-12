@@ -8,6 +8,7 @@ const {
   getConnectionsOfStatus,
   getAllUsers,
   updateUser,
+  getConnectionStatus,
 } = require('../controllers/users')
 
 const router = express.Router();
@@ -21,5 +22,6 @@ router.put('/accept-connection-request/:requestedUserId', acceptConnectionReques
 router.put('/decline-connection-request/:requestedUserId', declineConnection)
 router.put('/remove-connection/:requestedUserId', declineConnection)
 router.get('/get-connections/:connectionStatus', getConnectionsOfStatus)
+router.get('/:requestedUserId/connection-status', getConnectionsOfStatus)
 
 module.exports = router;

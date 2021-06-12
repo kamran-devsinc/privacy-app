@@ -2,9 +2,11 @@ const User = require('../models/user');
 
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id)
+    const user = await User.findById(req.params.id).populate('connections.value')
 
     if (!user) return res.status(404).json({ message: 'user not found' })
+
+    user.connections.value = user.connections.value.filter((connection) => connection.status === User.CONNECTION_STATUSES.connected)
 
     return res.status(200).json({ user })
   } catch (err) {
@@ -15,7 +17,7 @@ const getUserProfile = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const  { connections } = req.user
-    let userIds = connections.value.map( ({userId}) => userId ) 
+    let userIds = connections.value.map( ({userId}) => userId )
     userIds.push(req.user._id)
     const users = await User.find({ _id: { $nin: userIds }})
 
@@ -32,10 +34,11 @@ const updateUser = async (req, res) => {
     let updatedUser = user
     updatedUser.name = body.name || user.name
     if (body.email && body.email.hasOwnProperty('hidden')) {
-      console.log('body has property hidden')
       updatedUser.email.hidden = body.email.hidden
     }
-    updatedUser.workExperience = body.workExperience || user.workExperience
+    if (body.workExperience && body.workExperience.hasOwnProperty('hidden')) {
+      updatedUser.workExperience.hidden = body.workExperience.hidden
+    }
     if (body.connections && body.connections.hasOwnProperty('hidden')) {
       updatedUser.connections.hidden = body.connections.hidden
     }
@@ -58,10 +61,10 @@ const sendConnectionRequest = async (req, res) => {
 
     if (!requestedUser) return res.status(404).json({ message: 'requested user not found' });
 
-    const user1Update = await User.findOneAndUpdate({ _id: user._id }, { $push: { 'connections.value': { userId: requestedUserId, name: requestedUser.name,  status: User.CONNECTION_STATUSES.requestSent } } })
-    const user2Update = await User.findOneAndUpdate({ _id: requestedUserId }, { $push: { 'connections.value': { userId: user._id, name: user.name, status: User.CONNECTION_STATUSES.requestReceived } } })
+    await User.findOneAndUpdate({ _id: user._id }, { $push: { 'connections.value': { userId: requestedUserId, name: requestedUser.name,  status: User.CONNECTION_STATUSES.requestSent } } })
+    await User.findOneAndUpdate({ _id: requestedUserId }, { $push: { 'connections.value': { userId: user._id, name: user.name, status: User.CONNECTION_STATUSES.requestReceived } } })
 
-    return res.status(200).json({ success: true, user1Update, user2Update })
+    return res.status(200).json({ success: true })
   } catch (err) {
     return res.status(500).json({ message: 'Internal Server Error' })
   }
@@ -107,9 +110,21 @@ const getConnectionsOfStatus = async (req, res) => {
 
     if (!Object.values(User.CONNECTION_STATUSES).includes(connectionStatus)) return res.status(400).json({ message: 'invalid connection status' })
 
-    const userWithFilteredConnections = await User.findOne({ _id: user._id, 'connections.value.status': connectionStatus})
+    const userWithFilteredConnections = await User.findOne({ _id: user._id, 'connections.value.$.status': connectionStatus})
 
     return res.status(200).json({ connections: userWithFilteredConnections?.connections?.value ?? [] })
+  } catch (err) {
+    return res.status(500).json({ message: 'Internal Server Error' })
+  }
+}
+
+const getConnectionStatus = async (req, res) => {
+  try {
+    const { user, params: { requestedUserId } } = req
+
+    const connection = await User.find({ _id: user.id, 'connections.value.$.userId':  requestedUserId }).select('connections')
+
+    return res.status(200).json({ connection })
   } catch (err) {
     return res.status(500).json({ message: 'Internal Server Error' })
   }
@@ -123,4 +138,5 @@ module.exports = {
   getConnectionsOfStatus,
   getAllUsers,
   updateUser,
+  getConnectionStatus,
 }

@@ -31,7 +31,7 @@ const SignupStrategy = new LocalStrategy({
       name,
       email: { value: email },
       password,
-      workExperience,
+      workExperience: { value: workExperience },
     });
 
     return done(null, user);
