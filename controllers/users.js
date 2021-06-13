@@ -2,13 +2,23 @@ const User = require('../models/user');
 
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).populate('connections.value')
+    const user = await User.findOne({ _id: req.params.id })
 
     if (!user) return res.status(404).json({ message: 'user not found' })
 
-    user.connections.value = user.connections.value.filter((connection) => connection.status === User.CONNECTION_STATUSES.connected)
+    const formattedUser = {
+      _id: user._id,
+      name: user.name,
+      email: !user.email.hidden && user.email || undefined,
+      workExperience: !user.workExperience.hidden && user.workExperience || undefined,
+      connections: (!user.connections.hidden && user.connections) || undefined,
+    }
 
-    return res.status(200).json({ user })
+    if (formattedUser.connections) {
+      formattedUser.connections.value = user.connections.value.filter((connection) => connection.status === User.CONNECTION_STATUSES.connected)
+    }
+
+    return res.status(200).json({ user: formattedUser })
   } catch (err) {
     return res.status(500).json({ message: 'Internal Server Error' })
   }
@@ -104,39 +114,11 @@ const declineConnection = async (req, res) => {
   }
 }
 
-const getConnectionsOfStatus = async (req, res) => {
-  try {
-    const { user, params: { connectionStatus } } = req;
-
-    if (!Object.values(User.CONNECTION_STATUSES).includes(connectionStatus)) return res.status(400).json({ message: 'invalid connection status' })
-
-    const userWithFilteredConnections = await User.findOne({ _id: user._id, 'connections.value.$.status': connectionStatus})
-
-    return res.status(200).json({ connections: userWithFilteredConnections?.connections?.value ?? [] })
-  } catch (err) {
-    return res.status(500).json({ message: 'Internal Server Error' })
-  }
-}
-
-const getConnectionStatus = async (req, res) => {
-  try {
-    const { user, params: { requestedUserId } } = req
-
-    const connection = await User.find({ _id: user.id, 'connections.value.$.userId':  requestedUserId }).select('connections')
-
-    return res.status(200).json({ connection })
-  } catch (err) {
-    return res.status(500).json({ message: 'Internal Server Error' })
-  }
-}
-
 module.exports = {
   getUserProfile,
   sendConnectionRequest,
   acceptConnectionRequest,
   declineConnection,
-  getConnectionsOfStatus,
   getAllUsers,
   updateUser,
-  getConnectionStatus,
 }

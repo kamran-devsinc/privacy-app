@@ -21,7 +21,5 @@ router.put('/send-connection-request/:requestedUserId', sendConnectionRequest)
 router.put('/accept-connection-request/:requestedUserId', acceptConnectionRequest)
 router.put('/decline-connection-request/:requestedUserId', declineConnection)
 router.put('/remove-connection/:requestedUserId', declineConnection)
-router.get('/get-connections/:connectionStatus', getConnectionsOfStatus)
-router.get('/:requestedUserId/connection-status', getConnectionsOfStatus)
 
 module.exports = router;
